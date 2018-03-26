@@ -1,0 +1,100 @@
+
+            this.setState((previousState) => {
+
+              console.log('this is i,j going into set state',i,j)
+
+              console.log('This is the bean index going into set state',previousState.tileDataSource[i][j].i)
+
+              const newData = previousState.tileDataSource
+
+              console.log('The Bean Index for This Element Shoud now be',newData[i][j].i)
+
+              var x = newData.map((row,n) => {
+
+                let y = row.map((e,m) => {
+
+                if (n == i && m == j) {
+                return <Tile update = {this.updateGrid.bind(this)}
+                location = {e.location} key = {m} i = {e.i}
+                subviews = {e.view} />}
+                else {
+                  return this.state.gridItems[n][m]
+                }
+
+              })
+                // This is where the error occurs where an element no longer receives touches.
+                // Don't wrap this in a view.
+                return y})
+
+
+
+
+
+
+              return {gridItems: x}})
+
+
+              <TouchableHighlight style = {styles.container} onPress = {this.layoutGrid.bind(this)}>
+              <Text style = {styles.text}> {this.state.textShit} </Text>
+              </TouchableHighlight>
+
+
+              <TouchableHighlight onPress = {this.reColorGrid.bind(this)}>
+              <Text> Recolor The Grid </Text>
+              </TouchableHighlight>
+              <TouchableHighlight onPress = {this.animateTilesToLocations.bind(this)}>
+              <Text> AnimateTiles </Text>
+              </TouchableHighlight>
+
+
+
+              Animated.parallel([
+                      Animated.spring(            //Step 1
+                          this.state.tileDataSource[i][j].location,         //Step 2
+                          {toValue: {x: TILE_WIDTH*i+TILE_WIDTH*dx, y: TILE_WIDTH*j+TILE_WIDTH*dy } }     //Step 3
+                      ),
+                      Animated.spring(            //Step 1
+                          this.state.tileDataSource[i+dx][j+dy].location,         //Step 2
+                          {toValue: {x: TILE_WIDTH*i, y: TILE_WIDTH*j } }     //Step 3
+                        )
+
+                      ]).start()
+
+
+
+
+                                            <TouchableHighlight onPress = {this.reColorGrid.bind(this)}>
+                                            <Text> Recolor The Grid </Text>
+                                            </TouchableHighlight>
+                                            <TouchableHighlight onPress = {this.animateTilesToLocations.bind(this)}>
+                                            <Text> AnimateTiles </Text>
+                                            </TouchableHighlight>
+
+
+
+                                            var arr = this.state.tileDataSource.map((row,i) => {
+
+                                              let rows = row.map((e,j) => {
+
+                                                let element = [i,j]
+
+                                                let x = indexesToColor.filter(e => {return (i==e[0] && j==e[1])})
+                                                console.log('does the neighbor include the element being examined',i,j,x.length)
+
+                                                if (x.length != 0)
+                                                {
+                                                  console.log('I have found a neighbor with an index that needs updating')
+                                                  return <Tile update = {this.updateGrid.bind(this)}
+                                                   location = {e.location} scale = {e.scale} key = {j} i = {e.i} subview = {e.view} />
+                                                }
+                                                else {
+                                                  return this.state.tileComponents[i][j]
+                                                }
+
+                                              })
+
+                                              // This is where the error occurs where an element no longer receives touches.
+                                              // Don't wrap this in a view.
+                                              return rows})
+
+                                              this.setState({tileComponents: arr})
