@@ -63,9 +63,10 @@ var imageType = {
 
 class TileData {
 
-  constructor(img, index) {
+  constructor(img,index, key) {
 
     this.index = index;
+    this.key = key;
     this.location = new Animated.ValueXY;
     this.imageType = img;
     this.scale = new Animated.Value(1);
@@ -136,7 +137,7 @@ export default class Swappables extends Component<{}> {
     switch (gestureName) {
       case SWIPE_UP:
 
-        console.log('POOOOOOP: An upward swipe has been registered')
+        console.log('An upward swipe has been registered')
 
         this.updateGrid(i,j,0,-1)
 
@@ -144,21 +145,21 @@ export default class Swappables extends Component<{}> {
         break;
       case SWIPE_DOWN:
 
-      console.log('POOOOOOP: A downward swipe has been registered')
+      console.log('A downward swipe has been registered')
 
       this.updateGrid(i,j,0,1)
 
         break;
       case SWIPE_LEFT:
 
-      console.log('POOOOOOP: A left swipe has been registered')
+      console.log('A left swipe has been registered')
 
       this.updateGrid(i,j,-1,0)
 
         break;
       case SWIPE_RIGHT:
 
-      console.log('POOOOOOP: A right swipe has been registered')
+      console.log('A right swipe has been registered')
 
       this.updateGrid(i,j,1,0)
 
@@ -253,6 +254,27 @@ export default class Swappables extends Component<{}> {
 
     return hasANeighbor
 
+}
+
+pushTileDataToComponent() {
+
+
+  var a = []
+  // This creates the array of Tile components that is stored as a state variable
+  var arr = this.state.tileDataSource.map((row,i) => {
+
+    let rows = row.map((e,j) => {
+
+    a.push( <Tile update = {this.updateGrid.bind(this)}
+    location = {e.location} scale = {e.scale} key = {e.key} subview = {e.view} />)
+    })
+    // This is where the error occurs where an element no longer receives touches.
+    // Don't wrap this in a view.
+    return
+    rows})
+
+    this.setState({tileComponents: a})
+
 
 }
 
@@ -261,11 +283,14 @@ export default class Swappables extends Component<{}> {
           let doesTheStartColorAllHaveNeighbors = false
           let doesTheEndColorAllHaveNeighbors = false
           let indexesWithStarterColor = [[]]
-          let indexesWithEnderColor = [[3,2],[2,2],[1,1],[2,4]]
-          let poop = 'poop'
+          let indexesWithEnderColor = [[]]
 
 
             const newData = this.state.tileDataSource
+            const newComponents = this.state.tileComponents
+
+            const swapStarterComponent = this.state.tileComponents[i][j]
+            const swapEnderComponent = this.state.tileComponents[i+dx][i+dy]
 
             const swapStarter = this.state.tileDataSource[i][j]
             const swapEnder = this.state.tileDataSource[i+dx][j+dy]
@@ -273,8 +298,16 @@ export default class Swappables extends Component<{}> {
             newData[i][j] = swapEnder
             newData[i+dx][j+dy] = swapStarter
 
+            //newComponents[i][j] = swapEnderComponent
+            //newComponents[i+dx][j+dy] = swapStarterComponent
+
+
             this.setState({tileDataSource: newData})
 
+
+            //this.pushTileDataToComponent()
+
+            //this.setState({tileComponents: newComponents})
 
             indexesWithStarterColor = this.getIndexesWithColor(this.state.tileDataSource[i][j].imageType)
             indexesWithEnderColor = this.getIndexesWithColor(this.state.tileDataSource[i+dx][j+dy].imageType)
@@ -284,11 +317,16 @@ export default class Swappables extends Component<{}> {
             doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithEnderColor)
             console.log('Do all the end colors have neighbors?',doesTheEndColorAllHaveNeighbors)
 
+
+
             if (doesTheEndColorAllHaveNeighbors) {
 
-              console.log('POOOOOOOOOOOOOOOOOOP',indexesWithEnderColor)
+
+              this.processNewMatch(indexesWithEnderColor)
+
 
               let len = indexesWithEnderColor.length
+
 
               for (var n = 0; n<len; n++) {
 
@@ -299,13 +337,14 @@ export default class Swappables extends Component<{}> {
 
                 Animated.sequence([
                 Animated.delay(500),
-                Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 0.9, friction: 10})]
-              ).start(() => {this.processNewMatch(indexesWithEnderColor)});
+                Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 0.8, friction: 10}),
+                Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 1, friction: 5})]
+              ).start(() => {  this.pushTileDataToComponent()
+});
+
 
 
               }
-
-
           }
 
 }
@@ -344,19 +383,19 @@ componentDidUpdate() {
 
 
     // Really dumb grid - does not need to have any values. Just so we can run map.
-    let dummygrid =  [[11,12,13,14,15],[21,22,23,24,25],[31,32,33,34,35],[41,42,43,44,45],[51, 52, 53,54,55]]
+    let keys =  [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24]]
 
-        var tileData = dummygrid.map((row,i) => {
+        var tileData = keys.map((row,i) => {
 
-          let dataRows = row.map((e,j) => {
+          let dataRows = row.map((key,j) => {
 
             let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN]
 
             let randIndex = this.getRandomInt(6)
 
-            console.log('this is what an image should look like',beans[randIndex])
+            console.log('this is the key that i am giving to the tile with index',[i,j],key)
 
-            let data = new TileData(beans[randIndex],[i,j])
+            let data = new TileData(beans[randIndex],[i,j],key)
 
           return data})
 
@@ -373,41 +412,29 @@ componentDidUpdate() {
     }
 
 
-
     componentDidMount()
     {
 
+
+      var a = []
       // This creates the array of Tile components that is stored as a state variable
       var arr = this.state.tileDataSource.map((row,i) => {
 
         let rows = row.map((e,j) => {
 
-        return <Tile update = {this.updateGrid.bind(this)}
-        location = {e.location} scale = {e.scale} key = {j} i = {e.i} subview = {e.view} />})
+        a.push( <Tile update = {this.updateGrid.bind(this)}
+        location = {e.location} scale = {e.scale} key = {e.key} subview = {e.view} />)
+        })
         // This is where the error occurs where an element no longer receives touches.
         // Don't wrap this in a view.
-        return rows})
+        return
+        rows})
 
-        this.setState({tileComponents: arr})
-
-        this.animateValuesToLocations()
+        this.setState({tileComponents: a})
 
     }
 
-    // Deprecated
-    putTilesAtZero() {
-
-      this.state.tileDataSource.map((row,i)=> {
-
-        row.map((elem,j) => {
-
-          elem.location.setOffset({x: 0, y: 0})
-
-        })
-
-      })
-    }
-
+    // Gets all indexes with a specific color.
     getIndexesWithColor(color) {
 
       let colorIndexes = new Array()
@@ -429,28 +456,6 @@ componentDidUpdate() {
       }
 
 
-      reColorGrid(indexesToColor) {
-
-
-        // LETS MAKE THIS SO THAT I CHECKS TO ONLY RETURN A NEW COMPONENT FOR THE THIGNS THAT NEED UPDATING!!!!!!!!!!
-
-        // This creates the array of Tile components that is stored as a state variable
-        var arr = this.state.tileDataSource.map((row,i) => {
-
-          let rows = row.map((e,j) => {
-
-              return <Tile update = {this.updateGrid.bind(this)}
-               location = {e.location} scale = {e.scale} key = {j} i = {e.i} subview = {e.view} />
-
-
-          })
-
-          return rows})
-
-          this.setState({tileComponents: arr})
-
-
-      }
 
 
     // Animates the values in the tile data source based on their index in the array.
@@ -491,10 +496,11 @@ componentDidUpdate() {
 
             if (x.length != 0)
             {
-
+              e.setView(beans[randIndex])
               console.log('I am updating the process the match occuring at index:',element)
 
-              return e.setView()
+              return e
+
             }
             else {
               return e
@@ -527,11 +533,8 @@ componentDidUpdate() {
               </View>
           </View>
         </View>
-        <TouchableHighlight onPress = {this.processNewMatch.bind(this)}>
-        <Text> processNewMatch </Text>
-        </TouchableHighlight>
-        <TouchableHighlight onPress = {this.reColorGrid.bind(this)}>
-        <Text> Recolor The Grid </Text>
+        <TouchableHighlight onPress = {this.pushTileDataToComponent.bind(this)}>
+        <Text> Push Tile Data To The Component</Text>
         </TouchableHighlight>
       </View>
 
