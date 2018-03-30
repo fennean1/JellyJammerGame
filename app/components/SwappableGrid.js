@@ -77,7 +77,7 @@ class TileData {
 
     setView(imageType) {
 
-          this.img = imageType
+          this.imageType = imageType
           this.view = <Image source={imageType} style = {styles.tile}/>
 
     }
@@ -139,54 +139,44 @@ export default class Swappables extends Component<{}> {
 
         console.log('An upward swipe has been registered')
 
-        this.updateGrid(i,j,0,-1)
-
+        if (j>0) {
+          this.updateGrid(i,j,0,-1)
+        }
 
         break;
       case SWIPE_DOWN:
 
       console.log('A downward swipe has been registered')
 
+      if (j<4) {
+
       this.updateGrid(i,j,0,1)
+
+    }
 
         break;
       case SWIPE_LEFT:
 
       console.log('A left swipe has been registered')
 
+      if (i > 0) {
       this.updateGrid(i,j,-1,0)
+    }
 
         break;
       case SWIPE_RIGHT:
 
       console.log('A right swipe has been registered')
 
+      if (i<4) {
       this.updateGrid(i,j,1,0)
-
+    }
         break;
     }
   }
 
 
-  // Depracated
-  find2DIndex(array2D,element) {
-
-    for (var i = 0; i < array2D.length; i++)
-    {
-
-      let column = array2D[i]
-        for (var j = 0; j < column.length; j++)
-        {
-          if (column[j] == element)
-          {
-            return [i,j]
-          }
-        }
-    }
-    return (10,10)
-  }
-
-
+  // Determines if the tile at location i,j has a neighbor of the same color.
   hasNeighbor(i,j) {
 
       var {tileDataSource} = this.state
@@ -219,6 +209,8 @@ export default class Swappables extends Component<{}> {
       let spots = [l,r,u,d]
       let spotsLength = spots.length
 
+
+      // Checking for edge cases.
       for (let m = 0; m < spotsLength; m++) {
         if (spots[m] != 0 ) {
           // left
@@ -246,9 +238,9 @@ export default class Swappables extends Component<{}> {
 
       if (neighbors[n].imageType == tileDataSource[i][j].imageType) {
 
-        hasANeighbor = true
+          hasANeighbor = true
 
-        }
+      }
 
     }
 
@@ -278,6 +270,31 @@ pushTileDataToComponent() {
 
 }
 
+  animateMatch(indexesToAnimate) {
+
+
+                  let len = indexesToAnimate.length
+
+
+                  for (var n = 0; n<len; n++) {
+
+                    let e = indexesToAnimate[n]
+
+                    let i = e[0]
+                    let j = e[1]
+
+                    Animated.sequence([
+                    Animated.delay(500),
+                    Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 0.8, friction: 10}),
+                    Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 1, friction: 5})]
+                  ).start(() => {  this.pushTileDataToComponent()});
+
+                }
+
+
+  }
+
+
   updateGrid(i,j,dx,dy) {
 
           let doesTheStartColorAllHaveNeighbors = false
@@ -304,11 +321,6 @@ pushTileDataToComponent() {
 
             this.setState({tileDataSource: newData})
 
-
-            //this.pushTileDataToComponent()
-
-            //this.setState({tileComponents: newComponents})
-
             indexesWithStarterColor = this.getIndexesWithColor(this.state.tileDataSource[i][j].imageType)
             indexesWithEnderColor = this.getIndexesWithColor(this.state.tileDataSource[i+dx][j+dy].imageType)
 
@@ -317,35 +329,20 @@ pushTileDataToComponent() {
             doesTheEndColorAllHaveNeighbors = this.allHaveNeighbors(indexesWithEnderColor)
             console.log('Do all the end colors have neighbors?',doesTheEndColorAllHaveNeighbors)
 
-
-
+            // Kinda clunky but it works.
             if (doesTheEndColorAllHaveNeighbors) {
 
-
-              this.processNewMatch(indexesWithEnderColor)
-
-
-              let len = indexesWithEnderColor.length
-
-
-              for (var n = 0; n<len; n++) {
-
-                let e = indexesWithEnderColor[n]
-
-                let i = e[0]
-                let j = e[1]
-
-                Animated.sequence([
-                Animated.delay(500),
-                Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 0.8, friction: 10}),
-                Animated.spring(this.state.tileDataSource[i][j].scale, {toValue: 1, friction: 5})]
-              ).start(() => {  this.pushTileDataToComponent()
-});
-
-
+                this.processNewMatch(indexesWithEnderColor)
+                this.animateMatch(indexesWithEnderColor)
 
               }
-          }
+
+              if (doesTheStartColorAllHaveNeighbors)
+              {
+                this.processNewMatch(indexesWithStarterColor)
+                this.animateMatch(indexesWithStarterColor)
+              }
+
 
 }
 
@@ -391,7 +388,7 @@ componentDidUpdate() {
 
             let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN]
 
-            let randIndex = this.getRandomInt(6)
+            let randIndex = this.getRandomInt(7)
 
             console.log('this is the key that i am giving to the tile with index',[i,j],key)
 
@@ -488,7 +485,7 @@ componentDidUpdate() {
 
             let beans = [imageType.BLUEJELLYBEAN,imageType.PINKJELLYBEAN,imageType.PURPLEJELLYBEAN,imageType.YELLOWJELLYBEAN,imageType.ORANGEJELLYBEAN,imageType.GREENJELLYBEAN,imageType.REDJELLYBEAN]
 
-            let randIndex = this.getRandomInt(6)
+            let randIndex = this.getRandomInt(7)
 
             let element = [i,j]
 
@@ -527,15 +524,12 @@ componentDidUpdate() {
             // We need dimensionless view so that each
               <View>
                 <GestureRecognizer style = {styles.gestureContainer}
-                onSwipe = {(direction, state) => this.onSwipe(direction, state)}>
+                  onSwipe = {(direction, state) => this.onSwipe(direction, state)}>
                   {this.state.tileComponents}
                 </GestureRecognizer>
               </View>
           </View>
         </View>
-        <TouchableHighlight onPress = {this.pushTileDataToComponent.bind(this)}>
-        <Text> Push Tile Data To The Component</Text>
-        </TouchableHighlight>
       </View>
 
 
@@ -548,20 +542,10 @@ componentDidUpdate() {
 
 
 let Window = Dimensions.get('window');
-let CIRCLE_RADIUS = Window.width/19;
-let TILE_WIDTH = Window.width/6;
-
+let windowSpan = Math.min(Window.width,Window.height)
+let TILE_WIDTH = windowSpan/6;
 
 let styles = StyleSheet.create({
-    mainContainer: {
-        flex    : 1,
-        flexDirection: 'row',
-        marginTop: 200,
-        height: CIRCLE_RADIUS*10,
-        justifyContent: 'center',
-        backgroundColor: '#2c3e50'
-
-    },
     backGroundImage: {
       flex: 1,
       width: 300,
@@ -591,11 +575,6 @@ let styles = StyleSheet.create({
         textAlign   : 'center',
         color       : '#fff'
     },
-    draggableContainer: {
-        position    : 'absolute',
-        top         : Window.height/2 - CIRCLE_RADIUS,
-        left        : Window.width/2 - CIRCLE_RADIUS,
-    },
     gestureContainer: {
       flex: 1,
       justifyContent: 'center',
@@ -604,15 +583,14 @@ let styles = StyleSheet.create({
     },
     gridSuperView: {
       alignItems: 'center',
-      marginTop: 25,
+      marginTop: (Window.height-TILE_WIDTH*5)/2,
     },
     container: {
+
       width: TILE_WIDTH*5,
       height: TILE_WIDTH*5,
       //backgroundColor: '#89c2ff30',
       //borderRadius: 15,
-
-
 },
     jar      : {
       width               : 70,

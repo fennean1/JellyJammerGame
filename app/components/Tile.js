@@ -91,7 +91,8 @@ export default class Draggable extends Component<{}> {
 
 let Window = Dimensions.get('window');
 let CIRCLE_RADIUS = 25;
-let TILE_WIDTH = Window.width/7;
+let windowSpan = Math.min(Window.width,Window.height)
+let TILE_WIDTH = Window.height/7;
 
 let styles = StyleSheet.create({
  child: {

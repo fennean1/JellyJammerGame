@@ -24,7 +24,7 @@ class AppContainer extends Component  {
   constructor(props) {
     super(props);
 
-    this.state = {textShit: 'Butthole'}
+    this.state = {textShit: 'Test'}
 
   }
 
@@ -43,7 +43,7 @@ class AppContainer extends Component  {
 
   layoutGrid() {
 
-  this.setState({textShit: 'Poop'})
+  this.setState({textShit: 'Dummy'})
 
   }
 

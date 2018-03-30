@@ -98,3 +98,23 @@
                                               return rows})
 
                                               this.setState({tileComponents: arr})
+
+
+
+                                              // Depracated
+                                              find2DIndex(array2D,element) {
+
+                                                for (var i = 0; i < array2D.length; i++)
+                                                {
+
+                                                  let column = array2D[i]
+                                                    for (var j = 0; j < column.length; j++)
+                                                    {
+                                                      if (column[j] == element)
+                                                      {
+                                                        return [i,j]
+                                                      }
+                                                    }
+                                                }
+                                                return (10,10)
+                                              }
